@@ -39,7 +39,7 @@ void setup() {
 
 
 void loop() {
-
+  dist();
 }
 
 
@@ -50,6 +50,24 @@ void dist() {
 
   if (currentMillis - previousMillis1 >= interval1) {
     previousMillis1 = currentMillis;
-    float distance = hc.dist();
+    int distance = hc.dist();
+
+    lcd.setCursor(0, 0);
+    lcd.print("dist = ");
+    lcd.setCursor(8, 0);
+    lcd.print(distance);
+    lcd.setCursor(0, 1);
+
+    if (distance < 30) {
+      lcd.print("obj  : ");
+      lcd.setCursor(7, 1);
+      lcd.print("trop pret");
+    }
+
+    if (distance > 60) {
+      lcd.print("obj  : ");
+      lcd.setCursor(7, 1);
+      lcd.print("trop loin");
+    }
   }
-}
+  }
