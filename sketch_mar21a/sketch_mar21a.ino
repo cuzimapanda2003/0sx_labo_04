@@ -13,27 +13,43 @@
 
 AccelStepper myStepper(MOTOR_INTERFACE_TYPE, IN_1, IN_3, IN_2, IN_4);
 
-#define TRIGGER_PIN 21
-#define ECHO_PIN 20
+#define TRIGGER_PIN 3
+#define ECHO_PIN 2
 
 LCD_I2C lcd(0x27, 16, 2);
 
 HCSR04 hc(TRIGGER_PIN, ECHO_PIN);
 
+unsigned long previousMillis1 = 0;
+const long interval1 = 50;
+
+
 void setup() {
   Serial.begin(9600);
+  lcd.begin();
+  lcd.backlight();
+  lcd.print("2168637");
+  lcd.setCursor(0, 1);
+  lcd.print("labo4");
+  delay(2000);
 }
+
+
+
+
 
 void loop() {
-dist();
+
 }
 
-void dist(){
-  float distance = hc.dist();
-  Serial.print("Distance:");
-  Serial.println(distance);
-  delay(100);
 
 
 
+void dist() {
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis1 >= interval1) {
+    previousMillis1 = currentMillis;
+    float distance = hc.dist();
+  }
 }
