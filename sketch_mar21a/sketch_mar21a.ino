@@ -1,4 +1,8 @@
+#include <HCSR04.h>
+
 #include <AccelStepper.h>
+
+#include <LCD_I2C.h>
 
 #define MOTOR_INTERFACE_TYPE 4
 
@@ -7,19 +11,29 @@
 #define IN_3 10
 #define IN_4 11
 
+AccelStepper myStepper(MOTOR_INTERFACE_TYPE, IN_1, IN_3, IN_2, IN_4);
+
 #define TRIGGER_PIN 21
 #define ECHO_PIN 20
 
+LCD_I2C lcd(0x27, 16, 2);
 
-AccelStepper myStepper(MOTOR_INTERFACE_TYPE, IN_1, IN_3, IN_2, IN_4);
+HCSR04 hc(TRIGGER_PIN, ECHO_PIN);
 
 void setup() {
-  pinMode(TRIGGER_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
-
+  Serial.begin(9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+dist();
+}
+
+void dist(){
+  float distance = hc.dist();
+  Serial.print("Distance:");
+  Serial.println(distance);
+  delay(100);
+
+
 
 }
