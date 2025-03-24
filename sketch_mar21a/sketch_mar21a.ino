@@ -22,6 +22,7 @@ unsigned long previousMillis1 = 0;
 const long interval1 = 500;
 
 int previousDistance = -1;
+int lastSteps = 0;
 
 int maxSpeed = 500;
 int maxAccel = 100;
@@ -78,12 +79,27 @@ void dist() {
         lcd.setCursor(7, 1);
         lcd.print("weGud");
 
-        int steps = map(distance, 30, 60, 0, 2048);  
-        myStepper.moveTo(steps); 
+
+        int steps = map(distance, 30, 60, 0, 2048);
+
+
+        if (distance > previousDistance) {
+
+          myStepper.moveTo(lastSteps + steps);
+        } else if (distance < previousDistance) {
+
+          myStepper.moveTo(lastSteps - steps);
+        }
+
+
         while (myStepper.distanceToGo() != 0) {
           myStepper.run();
         }
+
+
+        lastSteps = myStepper.currentPosition();
       }
+
 
       previousDistance = distance;
     }
