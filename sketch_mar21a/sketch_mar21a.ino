@@ -1,7 +1,5 @@
 #include <HCSR04.h>
-
 #include <AccelStepper.h>
-
 #include <LCD_I2C.h>
 
 #define MOTOR_INTERFACE_TYPE 4
@@ -21,8 +19,12 @@ LCD_I2C lcd(0x27, 16, 2);
 HCSR04 hc(TRIGGER_PIN, ECHO_PIN);
 
 unsigned long previousMillis1 = 0;
-const long interval1 = 50;
+const long interval1 = 500;
 
+int previousDistance = -1;
+
+int maxSpeed = 500;
+int maxAccel = 100;
 
 void setup() {
   Serial.begin(9600);
@@ -32,18 +34,14 @@ void setup() {
   lcd.setCursor(0, 1);
   lcd.print("labo4");
   delay(2000);
+
+  myStepper.setMaxSpeed(maxSpeed);
+  myStepper.setAcceleration(maxAccel);
 }
-
-
-
-
 
 void loop() {
   dist();
 }
-
-
-
 
 void dist() {
   unsigned long currentMillis = millis();
@@ -52,22 +50,42 @@ void dist() {
     previousMillis1 = currentMillis;
     int distance = hc.dist();
 
-    lcd.setCursor(0, 0);
-    lcd.print("dist = ");
-    lcd.setCursor(8, 0);
-    lcd.print(distance);
-    lcd.setCursor(0, 1);
 
-    if (distance < 30) {
-      lcd.print("obj  : ");
-      lcd.setCursor(7, 1);
-      lcd.print("trop pret");
-    }
+    if (distance != previousDistance) {
 
-    if (distance > 60) {
-      lcd.print("obj  : ");
-      lcd.setCursor(7, 1);
-      lcd.print("trop loin");
+      lcd.setCursor(6, 0);
+      lcd.print("                ");
+      lcd.setCursor(0, 0);
+      lcd.print("dist = ");
+      lcd.setCursor(8, 0);
+      lcd.print(distance);
+
+
+      lcd.setCursor(6, 1);
+      lcd.print("                ");
+      lcd.setCursor(0, 1);
+
+      if (distance < 30) {
+        lcd.print("obj  : ");
+        lcd.setCursor(7, 1);
+        lcd.print("trop pret");
+      } else if (distance > 60) {
+        lcd.print("obj  : ");
+        lcd.setCursor(7, 1);
+        lcd.print("trop loin");
+      } else {
+        lcd.print("obj  : ");
+        lcd.setCursor(7, 1);
+        lcd.print("weGud");
+
+        int steps = map(distance, 30, 60, 0, 2048);  
+        myStepper.moveTo(steps); 
+        while (myStepper.distanceToGo() != 0) {
+          myStepper.run();
+        }
+      }
+
+      previousDistance = distance;
     }
   }
-  }
+}
