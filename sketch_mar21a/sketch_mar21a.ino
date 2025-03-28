@@ -43,6 +43,7 @@ void setup() {
 }
 
 void loop() {
+    myStepper.run();
   dist();
   }
 
@@ -79,7 +80,7 @@ void dist() {
         lcd.setCursor(7, 1);
         lcd.print("trop loin");
       } else {
-        degree = (steps / 2048) * 360;
+        degree = (steps / 2038) * 360;
         lcd.print("Deg  : ");
         lcd.setCursor(7, 1);
         lcd.print(degree);
@@ -97,9 +98,7 @@ void dist() {
         }
 
 
-        while (myStepper.distanceToGo() != 0) {
-          myStepper.run();
-        }
+       
 
 
         lastSteps = myStepper.currentPosition();
