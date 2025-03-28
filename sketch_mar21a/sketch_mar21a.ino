@@ -19,7 +19,9 @@ LCD_I2C lcd(0x27, 16, 2);
 HCSR04 hc(TRIGGER_PIN, ECHO_PIN);
 
 unsigned long previousMillis1 = 0;
+unsigned long previousMillis2 = 0;
 const long interval1 = 500;
+const long interval2 = 100;
 
 int previousDistance = -1;
 int lastSteps = 0;
@@ -42,14 +44,16 @@ void setup() {
 
 void loop() {
   dist();
-}
+  }
 
 void dist() {
   unsigned long currentMillis = millis();
+  float degree;
 
   if (currentMillis - previousMillis1 >= interval1) {
     previousMillis1 = currentMillis;
     int distance = hc.dist();
+    float steps = map(distance, 30, 60, 0, 2048);
 
 
     if (distance != previousDistance) {
@@ -75,12 +79,13 @@ void dist() {
         lcd.setCursor(7, 1);
         lcd.print("trop loin");
       } else {
-        lcd.print("obj  : ");
+        degree = (steps / 2048) * 360;
+        lcd.print("Deg  : ");
         lcd.setCursor(7, 1);
-        lcd.print("weGud");
+        lcd.print(degree);
 
 
-        int steps = map(distance, 30, 60, 0, 2048);
+
 
 
         if (distance > previousDistance) {
@@ -105,3 +110,4 @@ void dist() {
     }
   }
 }
+
