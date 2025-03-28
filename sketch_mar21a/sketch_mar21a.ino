@@ -19,9 +19,9 @@ LCD_I2C lcd(0x27, 16, 2);
 HCSR04 hc(TRIGGER_PIN, ECHO_PIN);
 
 unsigned long previousMillis1 = 0;
-unsigned long previousMillis2 = 0;
+
 const long interval1 = 500;
-const long interval2 = 100;
+
 
 int previousDistance = -1;
 int lastSteps = 0;
