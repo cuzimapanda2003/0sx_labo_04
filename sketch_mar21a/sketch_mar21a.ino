@@ -29,6 +29,7 @@ int lastSteps = 0;
 int maxSpeed = 500;
 int maxAccel = 100;
 
+
 void setup() {
   Serial.begin(9600);
   lcd.begin();
