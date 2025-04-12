@@ -4,10 +4,15 @@
 
 #define MOTOR_INTERFACE_TYPE 4
 
-#define IN_1 8
-#define IN_2 9
-#define IN_3 10
-#define IN_4 11
+#define IN_1 31
+#define IN_2 33
+#define IN_3 35
+#define IN_4 37
+
+enum dist { TROP_PRES,
+            TROP_LOIN,
+            MILIEU };
+dist DIST = TROP_LOIN;
 
 AccelStepper myStepper(MOTOR_INTERFACE_TYPE, IN_1, IN_3, IN_2, IN_4);
 
@@ -19,16 +24,16 @@ LCD_I2C lcd(0x27, 16, 2);
 HCSR04 hc(TRIGGER_PIN, ECHO_PIN);
 
 unsigned long previousMillis1 = 0;
-
 const long interval1 = 500;
 
-
 int previousDistance = -1;
-int lastSteps = 0;
+int distance;
+long targetPosition = 0;
+long previousTarget = -1;
+float degree;
 
 int maxSpeed = 500;
 int maxAccel = 100;
-
 
 void setup() {
   Serial.begin(9600);
@@ -44,70 +49,81 @@ void setup() {
 }
 
 void loop() {
-    myStepper.run();
-  dist();
-  }
+  myStepper.run(); 
+  dist();         
+}
 
 void dist() {
   unsigned long currentMillis = millis();
-  float degree;
 
   if (currentMillis - previousMillis1 >= interval1) {
     previousMillis1 = currentMillis;
-    int distance = hc.dist();
-    float steps = map(distance, 30, 60, 0, 2048);
+
+    distance = hc.dist();
+
+    if (distance < 30) {
+      DIST = TROP_PRES;
+    } else if (distance > 60) {
+      DIST = TROP_LOIN;
+    } else {
+      DIST = MILIEU;
+    }
 
 
     if (distance != previousDistance) {
+      affichage();
 
-      lcd.setCursor(6, 0);
-      lcd.print("                ");
-      lcd.setCursor(0, 0);
-      lcd.print("dist = ");
-      lcd.setCursor(8, 0);
-      lcd.print(distance);
+      switch (DIST) {
+        case TROP_PRES:
+          affichageTropPres();
+          break;
 
+        case TROP_LOIN:
+          affichageLoin();
+          break;
 
-      lcd.setCursor(6, 1);
-      lcd.print("                ");
-      lcd.setCursor(0, 1);
+        case MILIEU:
+         
+          targetPosition = map(distance, 30, 60, 0, 1024);
 
-      if (distance < 30) {
-        lcd.print("obj  : ");
-        lcd.setCursor(7, 1);
-        lcd.print("trop pret");
-      } else if (distance > 60) {
-        lcd.print("obj  : ");
-        lcd.setCursor(7, 1);
-        lcd.print("trop loin");
-      } else {
-        degree = (steps / 2038) * 360;
-        lcd.print("Deg  : ");
-        lcd.setCursor(7, 1);
-        lcd.print(degree);
+          
+          if (targetPosition != previousTarget) {
+            myStepper.moveTo(targetPosition);
+            previousTarget = targetPosition;
+          }
 
-
-
-
-
-        if (distance > previousDistance) {
-
-          myStepper.moveTo(lastSteps + steps);
-        } else if (distance < previousDistance) {
-
-          myStepper.moveTo(lastSteps - steps);
-        }
-
-
-       
-
-
-        lastSteps = myStepper.currentPosition();
+          affichageMilieu(targetPosition);
+          break;
       }
-
-
-      previousDistance = distance;
     }
+
+    previousDistance = distance;
   }
 }
 
+void affichage() {
+  lcd.setCursor(0, 0);
+  lcd.print("                ");
+  lcd.setCursor(0, 0);
+  lcd.print("dist = ");
+  lcd.print(distance);
+  lcd.print(" cm");
+
+  lcd.setCursor(0, 1);
+  lcd.print("                ");
+  lcd.setCursor(0, 1);
+}
+
+void affichageTropPres() {
+  lcd.print("obj  : trop pres");
+}
+
+void affichageLoin() {
+  lcd.print("obj  : trop loin");
+}
+
+void affichageMilieu(long steps) {
+  degree = (steps / 2048.0) * 360.0;
+  lcd.print("Deg  : ");
+  lcd.print(degree, 1);
+}
